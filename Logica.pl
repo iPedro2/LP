@@ -200,3 +200,32 @@ rm_bai(L1,L2,Zpos) :-
 						AoLado is Zpos - 3,				% posicao da peca que sera movida (a que esta por cima do 'buraco')
 						move(L1,AoLado,Zpos,L11),		% realiza o movimento
 						check_retry(L11,L2), !.			% verifica se ja atingiu a solucao pretendida
+
+% para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
+% coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
+% procura_cego/2
+procura_cego(L1,L1) :-
+						writeln('Parabens!'), !.
+						
+procura_cego(L1,L2) :-
+						sucessores(L1,Suc).
+					
+% dada uma configuracao, gera todas as configuracoes derivadas possiveis a partir dessa configuracao
+sucessores([],[]) :- !.
+sucessores(L,S) :-
+					nth1(Zpos,L,0),	% obtem a posicao do zero na configuracao
+					sucessores(L,Zpos,S).
+					
+sucessores(L,5,S) :-
+					move(L,2,5,S1),
+					writeln(S1),
+					move(L,4,5,S2),
+					writeln(S2),
+					move(L,6,5,S3),
+					writeln(S3),
+					move(L,8,5,S4),
+					writeln(S4),
+					append([],S1,Sa),
+					append(Sa,S2,Sb),
+					append(Sb,S3,Sc),
+					append(Sc,S4,S).
