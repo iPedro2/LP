@@ -23,7 +23,7 @@ valores_unicos([P|R]) :-
 						X = [],
 						valores_unicos([P|R],X).
 						
-valores_unicos([],_) :- false.
+valores_unicos([],_) :- true.
 valores_unicos([P|R],X) :-
 						lista_contem(X,P) ->
 							false ;
@@ -217,8 +217,8 @@ sucessores(L,S) :-
 					nth1(Zpos,L,0),	% obtem a posicao do zero na configuracao
 					sucessores(L,Zpos,S),
 					true, !.
-
-% para quando existem 4 movimentos possiveis
+					
+% para quando existem 4 movimentos possiveis ('buraco' na posicao central)
 sucessores(L,5,S) :-
 					move(L,2,5,S1),
 					move(L,4,5,S2),
