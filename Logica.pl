@@ -208,24 +208,86 @@ procura_cego(L1,L1) :-
 						writeln('Parabens!'), !.
 						
 procura_cego(L1,L2) :-
-						sucessores(L1,Suc).
+						sucessores(L1,Suc),
+						writeln(Suc).
 					
-% dada uma configuracao, gera todas as configuracoes derivadas possiveis a partir dessa configuracao
+% dada uma configuracao, gera todas as configuracoes que dela podem derivar
 sucessores([],[]) :- !.
 sucessores(L,S) :-
 					nth1(Zpos,L,0),	% obtem a posicao do zero na configuracao
-					sucessores(L,Zpos,S).
-					
+					sucessores(L,Zpos,S),
+					true, !.
+
+% para quando existem 4 movimentos possiveis
 sucessores(L,5,S) :-
 					move(L,2,5,S1),
-					writeln(S1),
 					move(L,4,5,S2),
-					writeln(S2),
 					move(L,6,5,S3),
-					writeln(S3),
 					move(L,8,5,S4),
-					writeln(S4),
-					append([],S1,Sa),
-					append(Sa,S2,Sb),
-					append(Sb,S3,Sc),
-					append(Sc,S4,S).
+					append([],[S1],Sa),
+					append(Sa,[S2],Sb),
+					append(Sb,[S3],Sc),
+					append(Sc,[S4],S).
+					
+% para quando so existem 2 movimentos com o 'buraco' nas pos 7 ou 9 (cantos inferiores)
+sucessores(L,7,S) :- suc2I(L,7,S).
+sucessores(L,9,S) :- suc2I(L,9,S).
+
+% para quando so existem 3 movimentos com o 'buraco' nas pos 4 ou 6 (vertical)
+sucessores(L,4,S) :- suc3V(L,4,S).
+sucessores(L,6,S) :- suc3V(L,6,S).
+
+% para quando so existem 2 movimentos com o 'buraco' nas pos 1 ou 3 (cantos superiores)
+sucessores(L,1,S) :- suc2S(L,1,S).
+sucessores(L,3,S) :- suc2S(L,3,S).
+
+% para quando so existem 3 movimentos com o 'buraco' nas pos 2 ou 8 (horizontal)
+sucessores(L,2,S) :- suc3H(L,2,S).
+sucessores(L,8,S) :- suc3H(L,8,S).
+
+suc3V(L,Z,S) :-
+				Cima is Z - 3,
+				Baixo is Z + 3,
+				writeln(Z),
+				(Z =:= 4 ->
+					Lado is Z + 1 ;
+					Lado is Z - 1),
+				move(L,Cima,Z,S1),
+				move(L,Baixo,Z,S2),
+				move(L,Lado,Z,S3),
+				append([],[S1],Sa),
+				append(Sa,[S2],Sb),
+				append(Sb,[S3],S).
+
+suc3H(L,Z,S) :-
+				Esq is Z - 1,
+				Dir is Z + 1,
+				(Z =:= 2 ->
+					Altura is Z + 3 ;
+					Altura is Z - 3),
+				move(L,Esq,Z,S1),
+				move(L,Dir,Z,S2),
+				move(L,Altura,Z,S3),
+				append([],[S1],Sa),
+				append(Sa,[S2],Sb),
+				append(Sb,[S3],S).
+				
+suc2S(L,Z,S) :-
+				Baixo is Z + 3,
+				(Z =:= 1 ->
+					Lado is Z + 1 ;
+					Lado is Z - 1),
+				move(L,Baixo,Z,S1),
+				move(L,Lado,Z,S2),
+				append([],[S1],Sa),
+				append(Sa,[S2],S).
+
+suc2I(L,Z,S) :-
+				Cima is Z - 3,
+				(Z =:= 7 ->
+					Lado is Z + 1 ;
+					Lado is Z - 1),
+				move(L,Cima,Z,S1),
+				move(L,Lado,Z,S2),
+				append([],[S1],Sa),
+				append(Sa,[S2],S).
