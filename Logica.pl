@@ -204,102 +204,21 @@ rm_bai(L1,L2,Zpos) :-
 % para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
 % procura_cego/2
-procura_cego(L1,L1) :-
-						writeln('Parabens!'), !.
+procura_cego(L,L) :-
+					writeln('final:'), print_single(L),
+					writeln('Parabens!'), !.
 						
 procura_cego(L1,L2) :-
-						sucessores(L1,Suc),
-						writeln(Suc).
-					
-% dada uma configuracao, gera todas as configuracoes que dela podem derivar
-sucessores([],[]) :- !.
+						sucessores(L1,S).
+
+% sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
+sucessores([],[]).
 sucessores(L,S) :-
-					nth1(Zpos,L,0),	% obtem a posicao do zero na configuracao
-					sucessores(L,Zpos,S).					
-
-% para quando existem 4 movimentos possiveis ('buraco' na posicao central)
-sucessores(L,5,S) :-
-					move(L,2,5,S1),
-					move(L,4,5,S2),
-					move(L,6,5,S3),
-					move(L,8,5,S4),
-					append([],[S1],Sa),
-					append(Sa,[S2],Sb),
-					append(Sb,[S3],Sc),
-					append(Sc,[S4],S).
-					
-% para quando so existem 2 movimentos com o 'buraco' nas pos 7 ou 9 (cantos inferiores)
-sucessores(L,7,S) :- suc2I(L,7,S).
-sucessores(L,9,S) :- suc2I(L,9,S).
-
-% para quando so existem 3 movimentos com o 'buraco' nas pos 4 ou 6 (vertical)
-sucessores(L,4,S) :- suc3V(L,4,S).
-sucessores(L,6,S) :- suc3V(L,6,S).
-
-% para quando so existem 2 movimentos com o 'buraco' nas pos 1 ou 3 (cantos superiores)
-sucessores(L,1,S) :- suc2S(L,1,S).
-sucessores(L,3,S) :- suc2S(L,3,S).
-
-% para quando so existem 3 movimentos com o 'buraco' nas pos 2 ou 8 (horizontal)
-sucessores(L,2,S) :- suc3H(L,2,S).
-sucessores(L,8,S) :- suc3H(L,8,S).
-
-suc3V(L,Z,S) :-
-				Cima is Z - 3,
-				Baixo is Z + 3,
-				writeln(Z),
-				(Z =:= 4 ->
-					Lado is Z + 1 ;
-					Lado is Z - 1),
-				move(L,Cima,Z,S1),
-				move(L,Baixo,Z,S2),
-				move(L,Lado,Z,S3),
-				append([],[S1],Sa),
-				append(Sa,[S2],Sb),
-				append(Sb,[S3],S).
-
-suc3H(L,Z,S) :-
-				Esq is Z - 1,
-				Dir is Z + 1,
-				(Z =:= 2 ->
-					Altura is Z + 3 ;
-					Altura is Z - 3),
-				move(L,Esq,Z,S1),
-				move(L,Dir,Z,S2),
-				move(L,Altura,Z,S3),
-				append([],[S1],Sa),
-				append(Sa,[S2],Sb),
-				append(Sb,[S3],S).
-				
-suc2S(L,Z,S) :-
-				Baixo is Z + 3,
-				(Z =:= 1 ->
-					Lado is Z + 1 ;
-					Lado is Z - 1),
-				move(L,Baixo,Z,S1),
-				move(L,Lado,Z,S2),
-				append([],[S1],Sa),
-				append(Sa,[S2],S).
-
-suc2I(L,Z,S) :-
-				Cima is Z - 3,
-				(Z =:= 7 ->
-					Lado is Z + 1 ;
-					Lado is Z - 1),
-				move(L,Cima,Z,S1),
-				move(L,Lado,Z,S2),
-				append([],[S1],Sa),
-				append(Sa,[S2],S).
-
-get_pos(L,S) :-
-				writeln('to the window'),
-				pos_esq(L,S),
-				writeln('to the wall'),
-				pos_dir(L,S),
-				write('to the sweat '),
-				pos_cim(L,S),
-				writeln('going down my balls'),
-				pos_bai(L,S).
+					writeln('coiso'),
+					pos_esq(L,S),
+					pos_dir(L,S),
+					pos_cim(L,S),
+					pos_bai(L,S).
 
 pos_esq(L,S) :-
 				nth1(Zpos,L,0),
@@ -307,7 +226,8 @@ pos_esq(L,S) :-
 				Pos > 0,
 				Pos =\= 3,
 				Pos =\= 6,
-				move(L,Pos,Zpos,S).
+				move(L,Pos,Zpos,S) ;
+				true.
 				
 pos_dir(L,S) :-
 				nth1(Zpos,L,0),
@@ -315,16 +235,20 @@ pos_dir(L,S) :-
 				Pos =\= 4,
 				Pos =\= 7,
 				Pos < 10,
-				move(L,Pos,Zpos,S).
+				move(L,Pos,Zpos,S) ;
+				true.
 				
 pos_cim(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos - 3,
 				Pos > 0,
-				move(L,Pos,Zpos,S).
+				move(L,Pos,Zpos,S) ;
+				true.
 				
 pos_bai(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos + 3,
 				Pos < 10,
-				move(L,Pos,Zpos,S).
+				move(L,Pos,Zpos,S) ;
+				true.
+
