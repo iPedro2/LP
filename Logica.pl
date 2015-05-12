@@ -206,25 +206,28 @@ esta_na_fila([P|R],Valor) :-
 							P =:= Valor, ! ;
 							esta_na_fila(R,Valor).
 							
-add_val_fila([],_,[]).
+add_val_fila(L,[],L) :- !.
 add_val_fila(Fila,[P|R],Ret) :-
-								append(Fila,[P],Ret),
-								add_val_fila(Ret,
-							
-cabeca([P|R],P).
-cauda([P|R],R).
+								append(Fila,[P],Ret2),
+								add_val_fila(Ret2,R,Ret).
+								
+
 
 % para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-% procura_cego/2						
+% procura_cego/2
 procura_cego(L1,L2) :-
+						writeln('oh non!'),
 						Fila = [],
 						procura_cego(L1,Fila,L2).
 
 procura_cego(L,_,L) :- writeln('terminou'), !.						
 procura_cego(L1,Fila,L2) :-
-						foreach(sucessores(L1,S),
-							
+						writeln('oui oui'),
+						foreach(sucessores(L1,S),(
+							writeln('laranja'),
+							append(Fila,[S],KK),
+							writeln(KK))).
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
