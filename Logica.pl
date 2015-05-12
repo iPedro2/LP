@@ -215,9 +215,8 @@ procura_cego(L1,L2) :-
 sucessores([],[]) :- !.
 sucessores(L,S) :-
 					nth1(Zpos,L,0),	% obtem a posicao do zero na configuracao
-					sucessores(L,Zpos,S),
-					true, !.
-					
+					sucessores(L,Zpos,S).					
+
 % para quando existem 4 movimentos possiveis ('buraco' na posicao central)
 sucessores(L,5,S) :-
 					move(L,2,5,S1),
@@ -291,3 +290,41 @@ suc2I(L,Z,S) :-
 				move(L,Lado,Z,S2),
 				append([],[S1],Sa),
 				append(Sa,[S2],S).
+
+get_pos(L,S) :-
+				writeln('to the window'),
+				pos_esq(L,S),
+				writeln('to the wall'),
+				pos_dir(L,S),
+				write('to the sweat '),
+				pos_cim(L,S),
+				writeln('going down my balls'),
+				pos_bai(L,S).
+
+pos_esq(L,S) :-
+				nth1(Zpos,L,0),
+				Pos is Zpos - 1,
+				Pos > 0,
+				Pos =\= 3,
+				Pos =\= 6,
+				move(L,Pos,Zpos,S).
+				
+pos_dir(L,S) :-
+				nth1(Zpos,L,0),
+				Pos is Zpos + 1,
+				Pos =\= 4,
+				Pos =\= 7,
+				Pos < 10,
+				move(L,Pos,Zpos,S).
+				
+pos_cim(L,S) :-
+				nth1(Zpos,L,0),
+				Pos is Zpos - 3,
+				Pos > 0,
+				move(L,Pos,Zpos,S).
+				
+pos_bai(L,S) :-
+				nth1(Zpos,L,0),
+				Pos is Zpos + 3,
+				Pos < 10,
+				move(L,Pos,Zpos,S).
