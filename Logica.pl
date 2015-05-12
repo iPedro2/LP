@@ -201,15 +201,18 @@ rm_bai(L1,L2,Zpos) :-
 						move(L1,AoLado,Zpos,L11),		% realiza o movimento
 						check_retry(L11,L2), !.			% verifica se ja atingiu a solucao pretendida
 
+esta_na_fila([],_) :- false.
+esta_na_fila([P|R],Valor) :-
+							P =:= Valor,
+							true ;
+							esta_na_fila(R,Valor).
+
 % para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-% procura_cego/2
-procura_cego(L,L) :-
-					writeln('final:'), print_single(L),
-					writeln('Parabens!'), !.
-						
+% procura_cego/2						
 procura_cego(L1,L2) :-
-						sucessores(L1,S).
+						Fila = [],
+						procura_cego(L1,Fila,L2).
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
@@ -251,4 +254,3 @@ pos_bai(L,S) :-
 				Pos < 10,
 				move(L,Pos,Zpos,S) ;
 				true.
-
