@@ -228,35 +228,50 @@ move_legal(C1,b,P,C2) :-
 
 esta_na_fila([],_) :- false.
 esta_na_fila([P|R],Valor) :-
-							P =:= Valor, ! ;
+							\+ dif(P,Valor), ! ;
 							esta_na_fila(R,Valor).
 
-% add_val_fila/3 - Recebe uma lista (fila) e uma lista de listas e introdu-las na fila, excepto sublistas vazias
+% add_val_fila/3 - Recebe uma lista de listas que representa uma fila de configuracoes e uma lista de listas com novas configuracoes e
+% introdu-las na fila, excepto sublistas vazias
 add_val_fila(L,[],L) :- !.
 add_val_fila(Fila,[P|R],Ret) :-
 								dif(P,[]),
 								append(Fila,[P],Ret2),
 								add_val_fila(Ret2,R,Ret), ! ;
 								add_val_fila(Fila,R,Ret).
-								
-junta([], L, L).
-junta([P | R], L1, [P | L2]) :- junta(R, L1, L2).
 
-% para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
+% first_fila/2 - Recebe uma fila, remove o primeiro elemento e retorna-o
+first_fila([],_,[]) :- !.
+first_fila([P|R],S,NvFila) :- 
+								NvFila = R,
+								S = P.
+						
+% divisao_lista/3 - Recebe duas listas L1 e L2 e retorna uma lista com os elementos de L1 que nao estao presentes em L2
+divisao_lista([],_,[]) :- !.
+divisao_lista(L1,L2,S) :- Sa = [], divisao_lista2(L1,L2,Sa,S).
+divisao_lista2([],_,_,[]).
+divisao_lista2([P|R],L2,Sa,S) :-
+							\+ esta_na_fila(L2,P),
+							append(Sa,P,Sb),
+							divisao_lista2(R,L2,Sb,S),
+							S = Sb ;
+							divisao_lista2(R,L2,Sa,S),
+							S = Sa.
+
+% procura_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-% procura_cego/2
 procura_cego(L1,L2) :-
-						writeln('oh non!'),
-						Fila = [],
-						procura_cego(L1,Fila,L2).
+						Abertos = [],
+						Fechados = [],
+						procura_cego(L1,Abertos,Fechados,L2).
 
-procura_cego(L,_,L) :- writeln('terminou'), !.						
-procura_cego(L1,Fila,L2) :-
-						writeln('oui oui'),
-						sucessores(L1,S),
-						writeln(S),
-						add_val_fila(Fila,S,NvFila),
-						writeln(NvFila).
+procura_cego(L,_,_,L) :- writeln('terminou'), !.						
+%procura_cego(L1,Abertos,Fechados,L2) :-
+%								%sucessores(L1,S),
+%								%add_val_fila(Abertos,S,NvAbertos).
+%								append(Fechados,[L1],NvFechados),
+%								sucessores(L1,Suc),
+								
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
@@ -276,7 +291,7 @@ pos_esq(L,S) :-
 				Pos > 0,
 				Pos =\= 3,
 				Pos =\= 6,
-				move(L,Pos,Zpos,S), ! ; true.
+				move(L,Pos,Zpos,S), ! ; S = [].
 				
 pos_dir(L,S) :-
 				nth1(Zpos,L,0),
@@ -284,17 +299,17 @@ pos_dir(L,S) :-
 				Pos =\= 4,
 				Pos =\= 7,
 				Pos < 10,
-				move(L,Pos,Zpos,S), ! ; true.
+				move(L,Pos,Zpos,S), ! ; S = [].
 				
 pos_cim(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos - 3,
 				Pos > 0,
-				move(L,Pos,Zpos,S), ! ; true.
+				move(L,Pos,Zpos,S), ! ; S = [].
 				
 pos_bai(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos + 3,
 				Pos < 10,
-				move(L,Pos,Zpos,S), ! ; true.
+				move(L,Pos,Zpos,S), ! ; S = [].
 
