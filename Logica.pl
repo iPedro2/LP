@@ -200,16 +200,6 @@ rm_bai(L1,L2,Zpos) :-
 						AoLado is Zpos - 3,				% posicao da peca que sera movida (a que esta por cima do 'buraco')
 						move(L1,AoLado,Zpos,L11),		% realiza o movimento
 						check_retry(L11,L2), !.			% verifica se ja atingiu a solucao pretendida
-
-esta_na_fila([],_) :- false.
-esta_na_fila([P|R],Valor) :-
-							P =:= Valor, ! ;
-							esta_na_fila(R,Valor).
-							
-add_val_fila(L,[],L) :- !.
-add_val_fila(Fila,[P|R],Ret) :-
-								append(Fila,[P],Ret2),
-								add_val_fila(Ret2,R,Ret).
 						
 % move_legal/4 - Afirma que a configuracao C2 e obtida da configuracao C1 fazendo o movimento M com a peca P
 move_legal(C1,e,P,C2) :-
@@ -236,6 +226,19 @@ move_legal(C1,b,P,C2) :-
 						move(C1,P,Zpos,Check),
 						\+ dif(Check,C2), !.
 
+esta_na_fila([],_) :- false.
+esta_na_fila([P|R],Valor) :-
+							P =:= Valor, ! ;
+							esta_na_fila(R,Valor).
+	
+add_val_fila(L,[],L) :- !.
+add_val_fila(Fila,[P|R],Ret) :-
+								append(Fila,[P],Ret2),
+								add_val_fila(Ret2,R,Ret).
+								
+junta([], L, L).
+junta([P | R], L1, [P | L2]) :- junta(R, L1, L2).
+
 % para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
 % procura_cego/2
@@ -247,19 +250,22 @@ procura_cego(L1,L2) :-
 procura_cego(L,_,L) :- writeln('terminou'), !.						
 procura_cego(L1,Fila,L2) :-
 						writeln('oui oui'),
-						foreach(sucessores(L1,S),(
-							writeln('laranja'),
-							append(Fila,[S],KK), % ha aqui um problema com a iteracao a escrever na mesma lista
-							writeln(KK))).
+						sucessores(L1,S),
+						writeln(S),
+						append(Fila,S,NvFila),
+						writeln(NvFila).
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
 sucessores(L,S) :-
-					writeln('coiso'),
-					pos_esq(L,S),
-					pos_dir(L,S),
-					pos_cim(L,S),
-					pos_bai(L,S).
+					pos_esq(L,S1),
+					pos_dir(L,S2),
+					pos_cim(L,S3),
+					pos_bai(L,S4),
+					append([],[S1],Sa),
+					append(Sa,[S2],Sb),
+					append(Sb,[S3],Sc),
+					append(Sc,[S4],S).
 
 pos_esq(L,S) :-
 				nth1(Zpos,L,0),
@@ -267,8 +273,7 @@ pos_esq(L,S) :-
 				Pos > 0,
 				Pos =\= 3,
 				Pos =\= 6,
-				move(L,Pos,Zpos,S) ;
-				true.
+				move(L,Pos,Zpos,S), ! ; true.
 				
 pos_dir(L,S) :-
 				nth1(Zpos,L,0),
@@ -276,19 +281,17 @@ pos_dir(L,S) :-
 				Pos =\= 4,
 				Pos =\= 7,
 				Pos < 10,
-				move(L,Pos,Zpos,S) ;
-				true.
+				move(L,Pos,Zpos,S), ! ; true.
 				
 pos_cim(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos - 3,
 				Pos > 0,
-				move(L,Pos,Zpos,S) ;
-				true.
+				move(L,Pos,Zpos,S), ! ; true.
 				
 pos_bai(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos + 3,
 				Pos < 10,
-				move(L,Pos,Zpos,S) ;
-				true.
+				move(L,Pos,Zpos,S), ! ; true.
+
