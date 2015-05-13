@@ -230,11 +230,14 @@ esta_na_fila([],_) :- false.
 esta_na_fila([P|R],Valor) :-
 							P =:= Valor, ! ;
 							esta_na_fila(R,Valor).
-	
+
+% add_val_fila/3 - Recebe uma lista (fila) e uma lista de listas e introdu-las na fila, excepto sublistas vazias
 add_val_fila(L,[],L) :- !.
 add_val_fila(Fila,[P|R],Ret) :-
+								dif(P,[]),
 								append(Fila,[P],Ret2),
-								add_val_fila(Ret2,R,Ret).
+								add_val_fila(Ret2,R,Ret), ! ;
+								add_val_fila(Fila,R,Ret).
 								
 junta([], L, L).
 junta([P | R], L1, [P | L2]) :- junta(R, L1, L2).
@@ -252,7 +255,7 @@ procura_cego(L1,Fila,L2) :-
 						writeln('oui oui'),
 						sucessores(L1,S),
 						writeln(S),
-						append(Fila,S,NvFila),
+						add_val_fila(Fila,S,NvFila),
 						writeln(NvFila).
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
