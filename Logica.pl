@@ -210,8 +210,31 @@ add_val_fila(L,[],L) :- !.
 add_val_fila(Fila,[P|R],Ret) :-
 								append(Fila,[P],Ret2),
 								add_val_fila(Ret2,R,Ret).
-								
-
+						
+% move_legal/4 - Afirma que a configuracao C2 e obtida da configuracao C1 fazendo o movimento M com a peca P
+move_legal(C1,e,P,C2) :-
+						nth1(Zpos,C1,0),
+						P =:= Zpos + 1,
+						move(C1,P,Zpos,Check),
+						\+ dif(Check,C2), !.
+						
+move_legal(C1,d,P,C2) :-
+						nth1(Zpos,C1,0),
+						P =:= Zpos - 1,
+						move(C1,P,Zpos,Check),
+						\+ dif(Check,C2), !.
+						
+move_legal(C1,c,P,C2) :-
+						nth1(Zpos,C1,0),
+						P =:= Zpos + 3,
+						move(C1,P,Zpos,Check),
+						\+ dif(Check,C2), !.
+						
+move_legal(C1,b,P,C2) :-
+						nth1(Zpos,C1,0),
+						P =:= Zpos - 3,
+						move(C1,P,Zpos,Check),
+						\+ dif(Check,C2), !.
 
 % para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
@@ -226,7 +249,7 @@ procura_cego(L1,Fila,L2) :-
 						writeln('oui oui'),
 						foreach(sucessores(L1,S),(
 							writeln('laranja'),
-							append(Fila,[S],KK),
+							append(Fila,[S],KK), % ha aqui um problema com a iteracao a escrever na mesma lista
 							writeln(KK))).
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
