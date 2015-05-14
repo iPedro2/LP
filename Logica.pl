@@ -1,3 +1,34 @@
+%%% escreve_solucao/1
+%%% escreve_solucao(M) em que M e uma lista de movimentos e um movimento e um par (Mov, Peca) 
+%%% por exemplo
+%%% ?- escreve_solucao([(b, 6), (b, 3), (d, 2)]).
+%%% mova a peca 6 para baixo
+%%% mova a peca 3 para baixo
+%%% mova a peca 2 para a direita.
+%%% true .
+
+escreve_solucao([(M, P) | []]) :- write('mova a peca '), 
+                                  write(P), 
+                                  traduz(M, Mp), 
+                                  write(Mp),
+                                  write('.'),
+                                  nl.
+
+escreve_solucao([(M, P) | R]) :- write('mova a peca '), 
+                                 write(P), 
+                                 traduz(M, Mp), 
+                                 write(Mp),
+                                 nl, 
+                                 escreve_solucao(R).
+
+
+%%% traduz/2 e um predicado auxiliar de escreve_solucao/1
+
+traduz(c, ' para cima').
+traduz(b, ' para baixo').
+traduz(e, ' para a esquerda').
+traduz(d, ' para a direita').
+
 % da aula pratica: maximo/2 - Recebe uma lista e retorna o maior valor nela contido
 maximo([P|R],M) :- maximo(R,P,M).				% predicado de entrada, recebe a lista e a variavel para devolver o valor
 maximo([],M,M).									% se a lista for vazia, retorna o proprio valor
@@ -121,19 +152,19 @@ resolve_manual2(L1,L2) :-
 						resolve_manual(L1,L2,Move).
 						
 % resolve_manual/3 - Para correspondencia dos varios movimentos
-resolve_manual(L1,L2,'e') :-						% para a esquerda
+resolve_manual(L1,L2,e) :-							% para a esquerda
 							nth1(Zpos,L1,0),		% obtem a posicao do zero no tabuleiro original
 							rm_esq(L1,L2,Zpos), !.	% invoca o predicado do movimento pretendido
 
-resolve_manual(L1,L2,'d') :-						% para a direita
+resolve_manual(L1,L2,d) :-							% para a direita
 							nth1(Zpos,L1,0),		% obtem a posicao do zero no tabuleiro original
 							rm_dir(L1,L2,Zpos), !.	% invoca o predicado do movimento pretendido
 
-resolve_manual(L1,L2,'c') :-						% para cima
+resolve_manual(L1,L2,c) :-							% para cima
 							nth1(Zpos,L1,0),		% obtem a posicao do zero no tabuleiro original
 							rm_cim(L1,L2,Zpos), !.	% invoca o predicado do movimento pretendido
 
-resolve_manual(L1,L2,'b') :-						% para baixo
+resolve_manual(L1,L2,b) :-							% para baixo
 							nth1(Zpos,L1,0),		% obtem a posicao do zero no tabuleiro original
 							rm_bai(L1,L2,Zpos), !.	% invoca o predicado do movimento pretendido
 							
@@ -245,7 +276,12 @@ first_fila([],_,[]) :- !.
 first_fila([P|R],S,NvFila) :- 
 								NvFila = R,
 								S = P.
-						
+							
+% del_ultimo/2 - Recebe uma lista e retorna-a com o ultimo elemento removido	
+del_ultimo([_], []) :- !.
+del_ultimo([],[]) :- !.
+del_ultimo([X|Xs], [X|WithoutLast]) :- del_ultimo(Xs, WithoutLast).
+
 % divisao_lista/3 - Recebe duas listas L1 e L2 e retorna uma lista com os elementos de L1 que nao estao presentes em L2
 divisao_lista([],_,[]) :- !.
 divisao_lista(L1,L2,S) :- divisao_lista2(L1,L2,[],S),!.
@@ -257,23 +293,35 @@ divisao_lista2([P|R],L2,Acc,S) :-
 							divisao_lista2(R,L2,Acc2,S),! ;	% volta a correr para os elementos seguintes
 							divisao_lista2(R,L2,Acc,S),!.	% volta a correr para os elementos seguintes
 
-% procura_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
+% resolve_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-procura_cego(L1,L2) :- procura_cego(L1,[],[],L2).
+resolve_cego(L1,L2) :- resolve_cego(L1,[],[],[],[],L2).
 
 % equivalente do BFS
-procura_cego(L,_,_,L) :-
-						writeln('terminou'),!.
-procura_cego(L1,Abertos,Fechados,L2) :-											% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
+resolve_cego(L,_,_,_,Cam,L) :-
+						writeln('TERMINOU'),
+						print_single(L),
+						write('Caminho seguido: '),writeln(Cam),!.
+
+resolve_cego(L1,Abertos,Fechados,CaminhosAbertos,Caminho,L2) :-				% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
 								writeln('estado actual'),
 								print_single(L1),
-								add_val_fila(Fechados,[L1],NvFechados),				% adiciona L1 a lista de fechados
-								sucessores(L1,Suc),								% gera os sucessores de L1
-    							add_val_fila([],Suc,Purgado),
-								divisao_lista(Purgado,NvFechados,Suc2),				% elimina os sucessores que ja estao na lista de fechados
-								add_val_fila(Abertos,Suc2,NvAbertos),				% adiciona a lista de abertos os sucessires
-								first_fila(NvAbertos,Valor,NvAbertos2),			% remove o proximo sucessor
-								procura_cego(Valor,NvAbertos2,NvFechados,L2).	% volta a correr com L1 = sucessor
+								add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
+								sucessores(L1,Suc),							% gera os sucessores de L1
+    							add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
+								divisao_lista(Purgado,NvFechados,Suc2),		% elimina os sucessores que ja estao na lista de fechados
+    							divisao_lista(Suc2,Abertos,Suc3),			% elimina os sucessores que ja estao na lista de abertos
+								add_val_fila(Abertos,Suc3,NvAbertos),		% adiciona a lista de abertos os sucessores
+								
+								cam_suc_lista(L1,Suc3,Paths),				% gera os caminhos para os sucessores de L1
+								append(CaminhosAbertos,Paths,NvCamAbs),		% adiciona os caminhos a lista de caminhos
+								
+								first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
+    							first_fila(NvCamAbs,Path,NvCamAbs2),
+    							del_ultimo(Caminho,RemCaminho),
+    							append(RemCaminho,[Path],NvCaminho),
+    
+								resolve_cego(Valor,NvAbertos2,NvFechados,NvCamAbs2,NvCaminho,L2).	% volta a correr com L1 = sucessor
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
@@ -293,7 +341,8 @@ pos_esq(L,S) :-
 				Pos > 0,
 				Pos =\= 3,
 				Pos =\= 6,
-				move(L,Pos,Zpos,S), ! ; S = [].
+				move(L,Pos,Zpos,S), ! ;
+				S = [].
 				
 pos_dir(L,S) :-
 				nth1(Zpos,L,0),
@@ -301,17 +350,46 @@ pos_dir(L,S) :-
 				Pos =\= 4,
 				Pos =\= 7,
 				Pos < 10,
-				move(L,Pos,Zpos,S), ! ; S = [].
+				move(L,Pos,Zpos,S), ! ;
+				S = [].
 				
 pos_cim(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos - 3,
 				Pos > 0,
-				move(L,Pos,Zpos,S), ! ; S = [].
+				move(L,Pos,Zpos,S), ! ;
+				S = [].
 				
 pos_bai(L,S) :-
 				nth1(Zpos,L,0),
 				Pos is Zpos + 3,
 				Pos < 10,
-				move(L,Pos,Zpos,S), ! ; S = [].
+				move(L,Pos,Zpos,S), ! ;
+				S = [].
+
+% cam_suc/3 (caminhos_sucessores) - Recebe uma configuracao e um seu sucessor e devolve um par para o caminho desse sucessor
+cam_suc([],_,[]) :- !.
+cam_suc(Orig,Suc,Cam) :-
+						nth1(ZOrig,Orig,0),
+						nth1(ZNv,Suc,0),
+						Delta is ZNv - ZOrig,
+						nth1(ZOrig,Suc,Peca),
+						((Delta =:= -1 ->
+							Cam = (d,Peca)) ;
+						(Delta =:= 1 ->
+							Cam = (e,Peca)) ;
+						(Delta =:= -3 ->
+							Cam = (b,Peca)) ;
+						(Delta =:= 3 ->
+							Cam = (c,Peca))),
+						!.
+
+% cam_suc_lista/3 (caminhos_sucessores_lista) - Equivalente a cam_suc mas permite receber uma lista de sucessores para uma dada configuracao
+cam_suc_lista(Orig,L,Cam) :- cam_suc_lista2(Orig,L,[],Cam).
+cam_suc_lista2([],_,[]) :- !.
+cam_suc_lista2(_,[],Acc,Acc) :- !.
+cam_suc_lista2(Orig,[P|R],Acc,Cam) :-
+								cam_suc(Orig,P,Path),
+								append(Acc,[Path],Acc2),
+								cam_suc_lista2(Orig,R,Acc2,Cam).
 
