@@ -248,31 +248,30 @@ first_fila([P|R],S,NvFila) :-
 						
 % divisao_lista/3 - Recebe duas listas L1 e L2 e retorna uma lista com os elementos de L1 que nao estao presentes em L2
 divisao_lista([],_,[]) :- !.
-divisao_lista(L1,L2,S) :- S = [], divisao_lista2(L1,L2,S).
-divisao_lista2([],_,[]) :- !.
-divisao_lista2([P|R],L2,S) :-
-							\+ esta_na_fila(L2,P),
-							write(P),writeln(' nao esta na lista'),
-							append(S,P,Sa),
-							writeln('adicionado a lista da divisao'),
-							divisao_lista2(R,L2,Sa), S = Sa ;
-							write(P),writeln(' esta na lista'),
-							divisao_lista2(R,L2,S), S = Sa.
+divisao_lista(L1,L2,S) :- divisao_lista2(L1,L2,[],S),!.
+divisao_lista2([],_,Acc,Acc) :- !.
+divisao_lista2(L,[],_,L) :- !.
+divisao_lista2([P|R],L2,Acc,S) :-
+							(\+ esta_na_fila(L2,P)),		% se P nao estiver na lista L2
+							append(Acc,[P],Acc2),			% adiciona P a S
+							divisao_lista2(R,L2,Acc2,S),! ;	% volta a correr para os elementos seguintes
+							divisao_lista2(R,L2,Acc,S),!.	% volta a correr para os elementos seguintes
 
 % procura_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-procura_cego(L1,L2) :-
-						Abertos = [],
-						Fechados = [],
-						procura_cego(L1,Abertos,Fechados,L2).
+procura_cego(L1,L2) :- procura_cego(L1,[],[],L2).
 
 % equivalente do BFS
-procura_cego(L,_,_,L) :- writeln('terminou'), !.						
+procura_cego(L,_,_,L) :-
+						writeln('terminou'),!.
 procura_cego(L1,Abertos,Fechados,L2) :-											% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
-								append(Fechados,[L1],NvFechados),				% adiciona L1 a lista de fechados
+								writeln('estado actual'),
+								print_single(L1),
+								add_val_fila(Fechados,[L1],NvFechados),				% adiciona L1 a lista de fechados
 								sucessores(L1,Suc),								% gera os sucessores de L1
-								divisao_lista(Suc,NvFechados,Suc2),				% elimina os sucessores que ja estao na lista de fechados
-								append(Abertos,[Suc2],NvAbertos),				% adiciona a lista de abertos os sucessires
+    							add_val_fila([],Suc,Purgado),
+								divisao_lista(Purgado,NvFechados,Suc2),				% elimina os sucessores que ja estao na lista de fechados
+								add_val_fila(Abertos,Suc2,NvAbertos),				% adiciona a lista de abertos os sucessires
 								first_fila(NvAbertos,Valor,NvAbertos2),			% remove o proximo sucessor
 								procura_cego(Valor,NvAbertos2,NvFechados,L2).	% volta a correr com L1 = sucessor
 
