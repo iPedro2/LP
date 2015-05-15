@@ -305,8 +305,6 @@ resolve_cego(L,_,_,_,Cam,L) :-
 						escreve_solucao(Cam).
 
 resolve_cego(L1,Abertos,Fechados,CamCandidatos,CamAct,L2) :-				% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
-								%writeln('estado actual'),
-								%print_single(L1),
 								add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
 								sucessores(L1,Suc),							% gera os sucessores de L1
     							add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
@@ -319,18 +317,16 @@ resolve_cego(L1,Abertos,Fechados,CamCandidatos,CamAct,L2) :-				% recebe as conf
 								
 								first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
     							first_fila(NvCamCand,Path,NvCamCand2),
-    							%del_ultimo(Caminho,RemCaminho),
-    							%append(RemCaminho,[Path],NvCaminho),
     
 								resolve_cego(Valor,NvAbertos2,NvFechados,NvCamCand2,Path,L2), !.	% volta a correr com L1 = sucessor
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
 sucessores(L,S) :-
-					pos_esq(L,S1),
-					pos_dir(L,S2),
-					pos_cim(L,S3),
-					pos_bai(L,S4),
+    				pos_bai(L,S1),
+    				pos_cim(L,S2),
+    				pos_dir(L,S3),
+    				pos_esq(L,S4),
 					append([],[S1],Sa),
 					append(Sa,[S2],Sb),
 					append(Sb,[S3],Sc),
@@ -404,4 +400,20 @@ cam_suc_lista_pre2(Orig,Prefix,[P|R],Acc,Cam) :-
 												append(Lpref,[Path],Appended),
 												append(Acc,[Appended],Acc2),
 												cam_suc_lista_pre2(Orig,Prefix,R,Acc2,Cam).
+												
+%resolve_info_h(
+
+desafio(1) :- resolve_manual([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+% input b d e b d
+
+desafio(2) :- resolve_manual([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
+% input e c e c
+
+desafio(3) :- resolve_cego([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+
+desafio(4) :- resolve_cego([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
+
+desafio(5) :- resolve_info_h([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+
+desafio(6) :- resolve_info_h([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
 
