@@ -1,3 +1,42 @@
+%%% transformacao/2
+%%% transformacao(C1, C2) em que C1 e C2 sao configuracoes representadas por listas
+%%% por exemplo
+%%% ?- transformacao([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+%%% Transformacao desejada:
+%%%  1  2  3      1     2 
+%%%  4  5  6  ->  4  5  3 
+%%%  7  8         7  8  6 
+%%% true .
+
+transformacao([A, B, C, D, E, F, G, H, I], 
+              [J, K, L, M, N, O, P, Q, R]) :-
+      write('Transformacao desejada:'), nl, 
+      escreve(A), escreve(B), escreve(C),  
+      write('    '), 
+      escreve(J), escreve(K), escreve(L),nl, 
+      escreve(D), escreve(E), escreve(F), 
+      write(' -> '), 
+      escreve(M), escreve(N), escreve(O), nl,
+      escreve(G), escreve(H), escreve(I), 
+      write('    '), 
+      escreve(P), escreve(Q), escreve(R), nl,!.
+      
+%%% escreve/1 e um predicado auxiliar de transformacao/2
+%%% a primeira regra permite escrever uma configuracao
+%%% por exemplo
+%%% ?- escreve([1, 2, 3, 4, 5, 6, 7, 8, 0]).
+%%%  1  2  3 
+%%%  4  5  6 
+%%%  7  8    
+%%% true .
+
+escreve([A, B, C, D, E, F, G, H, I]) :- escreve(A), escreve(B), escreve(C), nl,
+                                        escreve(D), escreve(E), escreve(F), nl,
+                                        escreve(G), escreve(H), escreve(I), nl.
+
+escreve(S) :- S = 0, write('   ').
+escreve(S) :- S < 10, write(' '), write(S), write(' ').
+
 %%% escreve_solucao/1
 %%% escreve_solucao(M) em que M e uma lista de movimentos e um movimento e um par (Mov, Peca) 
 %%% por exemplo
@@ -74,46 +113,6 @@ replace(L, I, X, R) :-
 						J is I1 + 1,
 						setarg(J, Dummy, X),
 						Dummy =.. [dummy|R].
-						
-% print_transform/2 - Recebe duas listas que representam o estado actual do tabuleiro e o estado objectivo
-print_transform(L1,L2) :-
-								N is 1,
-								print_transform(L1,L2,N).
-
-print_transform([P1|R1],[P2|R2],N) :-
-								%nl, write('com: '), writeln(N),
-								((N =:= 1 ; N =:= 2 ; N =:= 7 ; N =:= 8 ; N =:= 13 ; N =:= 14) ->
-									(P1 =\= 0 ->
-										write(P1), write(' ') ;
-										write('  ')) ;
-								(N =:= 3 ; N =:= 15) ->
-									(P1 =\= 0 ->
-										write(P1), write('    ') ;
-										write('     ')) ;
-								(N =:= 9) ->
-									(P1 =\= 0 ->
-										write(P1), write(' -> ') ;
-										write('  -> ')) ;
-								(N =:= 4 ; N =:= 5 ; N =:= 10 ; N =:= 11 ; N =:= 16 ; N =:= 17) ->
-									(P2 =\= 0 ->
-										write(P2), write(' ') ;
-										write('  ')) ;
-								(N =:= 6 ; N =:= 12) ->
-									(P2 =\= 0 ->
-										writeln(P2) ;
-										writeln(' ')) ;
-								(N =:= 18) ->
-									(P2 =\= 0 ->
-										write(P2) ;
-										write(' '))),
-								((N =:= 1 ; N =:= 2 ; N =:= 3 ; N =:= 7 ; N =:= 8 ; N =:= 9 ; N =:= 13 ; N =:= 14 ; N =:= 15) ->
-									(N1 is N + 1,
-									%write('N1: '), writeln(N1),
-									print_transform(R1,[P2|R2],N1)) ;
-								(N =:= 4 ; N =:= 5 ; N =:= 6 ; N =:= 10 ; N =:= 11 ; N =:= 12 ; N =:= 16 ; N =:= 17) ->
-									(N1 is N + 1,
-									print_transform([P1|R1],R2,N1))),
-								true.
 
 print_single(L1) :-
 					N is 1,
@@ -141,8 +140,7 @@ check_retry(L1,L2) :-
 
 % resolve_manual/2 - Recebe duas listas: uma com a disposicao inicial do tabuleiro e outra com a disposicao final.
 resolve_manual(L1,L2) :-
-						writeln('Transformacao desejada:'),
-						%print_transform(L1,L2),
+						transformacao(L1,L2),
 						resolve_manual2(L1,L2).
 
 % resolve_manual2/2 - Para evitar escrever a disposicao final no ecra a cada movimentacao
@@ -295,17 +293,20 @@ divisao_lista2([P|R],L2,Acc,S) :-
 
 % resolve_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
-resolve_cego(L1,L2) :- resolve_cego(L1,[],[],[],[],L2).
+resolve_cego(L1,L2) :-
+						transformacao(L1,L2),
+						resolve_cego(L1,[],[],[],[],L2).
 
 % equivalente do BFS
 resolve_cego(L,_,_,_,Cam,L) :-
-						writeln('TERMINOU'),
-						print_single(L),
-						write('Caminho seguido: '),writeln(Cam),!.
+						%writeln('TERMINOU'),
+						%print_single(L),
+						%write('Caminho seguido: '),writeln(Cam),!.
+						escreve_solucao(Cam).
 
-resolve_cego(L1,Abertos,Fechados,CaminhosAbertos,Caminho,L2) :-				% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
-								writeln('estado actual'),
-								print_single(L1),
+resolve_cego(L1,Abertos,Fechados,CamCandidatos,CamAct,L2) :-				% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
+								%writeln('estado actual'),
+								%print_single(L1),
 								add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
 								sucessores(L1,Suc),							% gera os sucessores de L1
     							add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
@@ -313,15 +314,15 @@ resolve_cego(L1,Abertos,Fechados,CaminhosAbertos,Caminho,L2) :-				% recebe as c
     							divisao_lista(Suc2,Abertos,Suc3),			% elimina os sucessores que ja estao na lista de abertos
 								add_val_fila(Abertos,Suc3,NvAbertos),		% adiciona a lista de abertos os sucessores
 								
-								cam_suc_lista(L1,Suc3,Paths),				% gera os caminhos para os sucessores de L1
-								append(CaminhosAbertos,Paths,NvCamAbs),		% adiciona os caminhos a lista de caminhos
+								cam_suc_lista_pre(L1,CamAct,Suc3,Paths),	% gera os caminhos para os sucessores de L1
+								append(CamCandidatos,Paths,NvCamCand),		% adiciona os caminhos a lista de caminhos
 								
 								first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
-    							first_fila(NvCamAbs,Path,NvCamAbs2),
-    							del_ultimo(Caminho,RemCaminho),
-    							append(RemCaminho,[Path],NvCaminho),
+    							first_fila(NvCamCand,Path,NvCamCand2),
+    							%del_ultimo(Caminho,RemCaminho),
+    							%append(RemCaminho,[Path],NvCaminho),
     
-								resolve_cego(Valor,NvAbertos2,NvFechados,NvCamAbs2,NvCaminho,L2).	% volta a correr com L1 = sucessor
+								resolve_cego(Valor,NvAbertos2,NvFechados,NvCamCand2,Path,L2), !.	% volta a correr com L1 = sucessor
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
@@ -386,10 +387,21 @@ cam_suc(Orig,Suc,Cam) :-
 
 % cam_suc_lista/3 (caminhos_sucessores_lista) - Equivalente a cam_suc mas permite receber uma lista de sucessores para uma dada configuracao
 cam_suc_lista(Orig,L,Cam) :- cam_suc_lista2(Orig,L,[],Cam).
-cam_suc_lista2([],_,[]) :- !.
 cam_suc_lista2(_,[],Acc,Acc) :- !.
 cam_suc_lista2(Orig,[P|R],Acc,Cam) :-
 								cam_suc(Orig,P,Path),
 								append(Acc,[Path],Acc2),
 								cam_suc_lista2(Orig,R,Acc2,Cam).
+
+cam_suc_lista_pre(Orig,Prefix,L,Cam) :- cam_suc_lista_pre2(Orig,Prefix,L,[],Cam).
+cam_suc_lista_pre2(_,_,[],Acc,Acc) :- !.
+cam_suc_lista_pre2(Orig,Prefix,[P|R],Acc,Cam) :-
+    											(   dif(Prefix,[]) ->  
+													append([],Prefix,Lpref) ;
+                                                	write('')
+                                                ),
+												cam_suc(Orig,P,Path),
+												append(Lpref,[Path],Appended),
+												append(Acc,[Appended],Acc2),
+												cam_suc_lista_pre2(Orig,Prefix,R,Acc2,Cam).
 
