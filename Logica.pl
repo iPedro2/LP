@@ -427,8 +427,28 @@ cam_suc_lista_pre2(Orig,Prefix,[P|R],Acc,Cam) :-
 												append(Lpref,[Path],Appended),
 												append(Acc,[Appended],Acc2),
 												cam_suc_lista_pre2(Orig,Prefix,R,Acc2,Cam).
-												
-%resolve_info_h(
+
+% sobreposicao/3 - Recebe duas listas e indica se as posicoes Pos em ambas (a contar a partir de 1) sao iguais
+sobreposicao(L,L,_) :- !.
+sobreposicao(L1,L2,Pos) :-
+						nth1(Pos,L1,Primeiro),
+						nth1(Pos,L2,Segundo),
+						\+ dif(Primeiro,Segundo).
+
+abs_sobr([],_) :- !.
+abs_sobr(_,[]) :- !.
+abs_sobr([P1|R1],[P2|R2],S) :-
+							(\+ dif(P1,P2) ->
+								S1 is S + 1;
+								S1 = S),
+							abs_sobr(R1,R2,S1).
+						
+
+% distancia de Hamming - numero de quadrados fora da posicao certa
+resolve_info_h(L,L) :-
+						writeln('terminou'),!.
+%resolve_info_h(L1,L2) :-
+						
 
 desafio(1) :- resolve_manual([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
 % input b d e b d
@@ -440,7 +460,7 @@ desafio(3) :- resolve_cego([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8,
 
 desafio(4) :- resolve_cego([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
 
-%desafio(5) :- resolve_info_h([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+desafio(5) :- resolve_info_h([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
 
-%desafio(6) :- resolve_info_h([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
+desafio(6) :- resolve_info_h([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
 
