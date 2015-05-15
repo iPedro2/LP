@@ -274,7 +274,11 @@ first_fila([],_,[]) :- !.
 first_fila([P|R],S,NvFila) :- 
 								NvFila = R,
 								S = P.
-							
+								
+mete_no_fim(L,S) :-
+					first_fila(L,Valor,L2),
+					append(L2,[Valor],S).
+
 % del_ultimo/2 - Recebe uma lista e retorna-a com o ultimo elemento removido	
 del_ultimo([_], []) :- !.
 del_ultimo([],[]) :- !.
@@ -295,30 +299,53 @@ divisao_lista2([P|R],L2,Acc,S) :-
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
 resolve_cego(L1,L2) :-
 						transformacao(L1,L2),
-						resolve_cego(L1,[],[],[],[],L2).
+						resolve_cego(L1,[],L2).
 
 % equivalente do BFS
-resolve_cego(L,_,_,_,Cam,L) :-
+resolve_cego(L,_,L) :-
 						%writeln('TERMINOU'),
 						%print_single(L),
 						%write('Caminho seguido: '),writeln(Cam),!.
-						escreve_solucao(Cam).
+						writeln('terminou'),!.
 
-resolve_cego(L1,Abertos,Fechados,CamCandidatos,CamAct,L2) :-				% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
-								add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
-								sucessores(L1,Suc),							% gera os sucessores de L1
-    							add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
-								divisao_lista(Purgado,NvFechados,Suc2),		% elimina os sucessores que ja estao na lista de fechados
-    							divisao_lista(Suc2,Abertos,Suc3),			% elimina os sucessores que ja estao na lista de abertos
-								add_val_fila(Abertos,Suc3,NvAbertos),		% adiciona a lista de abertos os sucessores
+resolve_cego(L1,Fechados,L2) :-												% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
+								%add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
+								%sucessores(L1,Suc),							% gera os sucessores de L1
+    							%add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
+    							%first_fila(Purgado,PrimeiroSuc,Suc2),
+    							%divisao_lista([PrimeiroSuc],NvFechados,Res),
+    							%dif(Res,[]),
+    							%resolve_cego(PrimeiroSuc,NvFechados,L2) ;
+    							
+								%divisao_lista(Purgado,NvFechados,Suc2),		% elimina os sucessores que ja estao na lista de fechados
+    							%divisao_lista(Suc2,Abertos,Suc3),			% elimina os sucessores que ja estao na lista de abertos
+								%add_val_fila(Abertos,Suc3,NvAbertos),		% adiciona a lista de abertos os sucessores
 								
-								cam_suc_lista_pre(L1,CamAct,Suc3,Paths),	% gera os caminhos para os sucessores de L1
-								append(CamCandidatos,Paths,NvCamCand),		% adiciona os caminhos a lista de caminhos
+								%cam_suc_lista_pre(L1,CamAct,Suc3,Paths),	% gera os caminhos para os sucessores de L1
+								%append(CamCandidatos,Paths,NvCamCand),		% adiciona os caminhos a lista de caminhos
 								
-								first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
-    							first_fila(NvCamCand,Path,NvCamCand2),
+								%first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
+    							%first_fila(NvCamCand,Path,NvCamCand2),
     
-								resolve_cego(Valor,NvAbertos2,NvFechados,NvCamCand2,Path,L2), !.	% volta a correr com L1 = sucessor
+								%resolve_cego(Valor,NvFechados,NvCamCand2,Path,L2), !.	% volta a correr com L1 = sucessor
+								%write('('),write(L1),write(','),write(L2),write('), '),
+								append(Fechados,[L1],NvFechados),
+								sucessores(L1,Suc),
+    							add_val_fila([],Suc,Purg),
+								descobre_no(L1,Purg,NvFechados,L2).
+								
+descobre_no(L,Suc,Fechados,Final) :-
+						first_fila(Suc,Primeiro,_),
+    					divisao_lista([Primeiro],Fechados,Verificacao),
+    					(   dif(Verificacao,[]) ->  
+                        	(   resolve_cego(Primeiro,Fechados,Final),!) ;
+                        	first_fila(Suc,_,SucSemPrimeiro)),
+    					(   dif(SucSemPrimeiro,[]) ->  
+                        	(   descobre_no(L,SucSemPrimeiro,Fechados,Final),!) ;
+                        	(mete_no_fim(Fechados,NvFechados),
+                             first_fila(NvFechados,Predecessor,_),
+                             resolve_cego(Predecessor,NvFechados,Final),!)).
+                            
 
 % sucessores/2 - Dada uma configuracao do tabuleiro L, gera todos os sucessores possiveis (utilizado para a procura cega)
 sucessores([],[]).
@@ -413,7 +440,7 @@ desafio(3) :- resolve_cego([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8,
 
 desafio(4) :- resolve_cego([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
 
-desafio(5) :- resolve_info_h([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
+%desafio(5) :- resolve_info_h([1, 2, 3, 4, 5, 6, 7, 8, 0], [1, 0, 2, 4, 5, 3, 7, 8, 6]).
 
-desafio(6) :- resolve_info_h([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
+%desafio(6) :- resolve_info_h([0, 1, 3, 4, 2, 5, 7, 8, 6], [1, 2, 3, 4, 5, 6, 7, 8, 0]).
 
