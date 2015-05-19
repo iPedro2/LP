@@ -316,42 +316,33 @@ divisao_lista2([P|R],L2,Acc,S) :-
 
 % resolve_cego/2 - Para a procura cega, dada uma configuracao inicial, o programa deve gerar os sucessores dessa configuracao e testar, em largura, se algum deles
 % coincide com a configuracao objectiva. Se sim, termina a computacao, se nao, gera os sucessores e repete o processo
+resolve_cego(L,L) :- transformacao(L,L), !.
 resolve_cego(L1,L2) :-
 						transformacao(L1,L2),
-						resolve_cego(L1,[],L2).
-
-% equivalente do BFS
-resolve_cego(L,_,L) :-
-						%writeln('TERMINOU'),
-						%print_single(L),
-						%write('Caminho seguido: '),writeln(Cam),!.
-						writeln('terminou'),!.
-
-resolve_cego(L1,Fechados,L2) :-												% recebe as configs L1 e L2, verifica se sao iguais e termina se forem
-								%add_val_fila(Fechados,[L1],NvFechados),		% adiciona L1 a lista de fechados
-								%sucessores(L1,Suc),							% gera os sucessores de L1
-    							%add_val_fila([],Suc,Purgado),				% elimina sublistas vazias correspondentes a movimentos ilegais
-    							%first_fila(Purgado,PrimeiroSuc,Suc2),
-    							%divisao_lista([PrimeiroSuc],NvFechados,Res),
-    							%dif(Res,[]),
-    							%resolve_cego(PrimeiroSuc,NvFechados,L2) ;
-    							
-								%divisao_lista(Purgado,NvFechados,Suc2),		% elimina os sucessores que ja estao na lista de fechados
-    							%divisao_lista(Suc2,Abertos,Suc3),			% elimina os sucessores que ja estao na lista de abertos
-								%add_val_fila(Abertos,Suc3,NvAbertos),		% adiciona a lista de abertos os sucessores
-								
-								%cam_suc_lista_pre(L1,CamAct,Suc3,Paths),	% gera os caminhos para os sucessores de L1
-								%append(CamCandidatos,Paths,NvCamCand),		% adiciona os caminhos a lista de caminhos
-								
-								%first_fila(NvAbertos,Valor,NvAbertos2),		% remove o proximo sucessor
-    							%first_fila(NvCamCand,Path,NvCamCand2),
-    
-								%resolve_cego(Valor,NvFechados,NvCamCand2,Path,L2), !.	% volta a correr com L1 = sucessor
-								%write('('),write(L1),write(','),write(L2),write('), '),
-								append(Fechados,[L1],NvFechados),
-								sucessores(L1,Suc),
-    							add_val_fila([],Suc,Purg),
-								descobre_no(L1,Purg,NvFechados,L2).
+						dfs(L1,[],[L1],[],L2), !.
+%resolve_cego(L,L,_) :- escreve_solucao.
+%resolve_cego(L1,L2,M) :- 
+%						move_legal(L1,M,P,NewC),
+ %   					\+ member(NewC,M),
+  %  					resolve_cego(L1,L2,[L2|M]).
+						
+dfs(L,_,_,Cam,L) :- escreve_solucao(Cam),!.
+dfs(L1,Ab,Fe,Cam,L2) :-
+				sucessores(L1,S),				% gera os sucessores do estado actual
+				add_val_fila([],S,S1),			% remove as sublistas vazias
+				divisao_lista(S1,Fe,S2),		% elimina os sucessores ja visitados
+				divisao_lista(S2,Ab,S3),		% elimina os sucessores na lista de abertos
+    			(   dif(S3,[]) ->  				% caso tenha sucessores
+                	(   append(S3,Ab,NvAb),
+                        first_fila(NvAb,Proximo,NvAb2),
+                    	cam_suc(L1,Proximo,Caminho),
+                        append(Cam,[Caminho],NvCam)) ;
+                        
+                    (   first_fila(Ab,Proximo,NvAb2),	% caso os sucessores ja estejam na lista de abertos
+                        del_ultimo(Cam,NvCam)			% ou fechados, ou nao tenha sucessores
+                    )),
+    			append(Fe,[Proximo],NvFe),
+    			dfs(Proximo,NvAb2,NvFe,NvCam,L2).
 								
 descobre_no(L,Suc,Fechados,Final) :-
 						first_fila(Suc,Primeiro,_),
